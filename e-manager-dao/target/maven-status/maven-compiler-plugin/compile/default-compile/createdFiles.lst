@@ -1,0 +1,11 @@
+com\cusx\mapper\TbContentCategoryMapper.class
+com\cusx\mapper\TbContentMapper.class
+com\cusx\mapper\TbItemDescMapper.class
+com\cusx\mapper\TbItemParamItemMapper.class
+com\cusx\mapper\TbItemMapper.class
+com\cusx\mapper\TbOrderItemMapper.class
+com\cusx\mapper\TbOrderMapper.class
+com\cusx\mapper\TbUserMapper.class
+com\cusx\mapper\TbItemParamMapper.class
+com\cusx\mapper\TbItemCatMapper.class
+com\cusx\mapper\TbOrderShippingMapper.class
