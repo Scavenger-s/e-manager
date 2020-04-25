@@ -3,7 +3,16 @@ package com.cusx.service.impl;
 import java.util.Date;
 import java.util.List;
 
+import javax.annotation.Resource;
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.core.MessageCreator;
 import org.springframework.stereotype.Service;
 
 import com.cusx.commons.pojo.EasyUIDataGridResult;
@@ -37,6 +46,12 @@ public class ItemServiceImpl implements ItemService {
 	
 	@Autowired
 	private TbItemDescMapper itemDescMapper;
+	
+	@Autowired
+	private JmsTemplate jmsTemplate;
+	
+	@Resource
+	private Destination topicDestination;
 	@Override
 	public TbItem getItemById(long itemId) {
 		//根据主键查询
@@ -71,22 +86,35 @@ public class ItemServiceImpl implements ItemService {
 
 	@Override
 	public E3Result addItem(TbItem item, String desc) {
-		long id = IDUtils.genItemId();
-		item.setId(id);
+		//生成商品id
+		final long itemId = IDUtils.genItemId();
+		//补全item的属性
+		item.setId(itemId);
 		//1-正常，2-下架，3-删除
-		item.setStatus((byte)1);
+		item.setStatus((byte) 1);
 		item.setCreated(new Date());
 		item.setUpdated(new Date());
+		//向商品表插入数据
 		itemMapper.insert(item);
 		//创建一个商品描述表对应的pojo对象。
 		TbItemDesc itemDesc = new TbItemDesc();
 		//补全属性
-		itemDesc.setItemId(id);
+		itemDesc.setItemId(itemId);
 		itemDesc.setItemDesc(desc);
 		itemDesc.setCreated(new Date());
 		itemDesc.setUpdated(new Date());
 		//向商品描述表插入数据
 		itemDescMapper.insert(itemDesc);
+		//发送商品消息
+		jmsTemplate.send(topicDestination, new MessageCreator() {
+			
+			@Override
+			public Message createMessage(Session session) throws JMSException {
+				TextMessage message = session.createTextMessage(itemId+"");
+				return message;
+			}
+		});
+		
 		//返回成功
 		return E3Result.ok();		
 		
